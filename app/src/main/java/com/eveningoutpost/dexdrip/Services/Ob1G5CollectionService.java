@@ -329,7 +329,7 @@ public class Ob1G5CollectionService extends G5BaseService {
                         }
                         break;
                     case CONNECT_NOW:
-                        connect_to_device(false);
+                        connect_to_device(true);
                         break;
                     case CONNECT:
                         connect_to_device(true);
