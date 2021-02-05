@@ -769,33 +769,28 @@ public class Treatments extends Model {
     // using the original calculation
     private static Pair<Double, Double> calculateLegacyIobActivityFromTreatmentAtTime(final Treatments treatment, final double time) {
 
-        final double dia = Profile.insulinActionTime(time); // duration insulin action in hours
-        final double peak = 75; // minutes in based on a 3 hour DIA - scaled proportionally (orig 75)
+        // time unit in minutes
+        final double dia = Profile.insulinActionTime(time) * 60; // duration insulin action in hours
+        final double tmax = Profile.insulinTmax(time); // Approx for Fiasp
 
         double insulin_delay_minutes = 0;
-
         double insulin_timestamp = treatment.timestamp + (insulin_delay_minutes * 60 * 1000);
 
-        //Iob response = new Iob();
-
-        final double scaleFactor = 3.0 / dia;
         double iobContrib = 0;
         //double activityContrib = 0;
 
         // only use treatments with insulin component which have already happened
         if ((treatment.insulin > 0) && (insulin_timestamp < time)) {
-            //  double bolusTime = insulin_timestamp; // bit of a dupe
-            double minAgo = scaleFactor * (((time - insulin_timestamp) / 1000) / 60);
+            double minAgo = (((time - insulin_timestamp) / 1000) / 60);
 
-            if (minAgo < peak) {
-                double x1 = minAgo / 5 + 1;
-                iobContrib = treatment.insulin * (1 - 0.001852 * x1 * x1 + 0.001852 * x1);
+            if (minAgo <= tmax) {
+                iobContrib = treatment.insulin * (1.0 - minAgo * minAgo / dia / tmax  );
+
                 // units: BG (mg/dL)  = (BG/U) *    U insulin     * scalar
                 // activityContrib = sens * activityMultipler * treatment.insulin * (2 / dia / 60 / peak) * minAgo;
 
-            } else if (minAgo < 180) {
-                double x2 = (minAgo - peak) / 5;
-                iobContrib = treatment.insulin * (0.001323 * x2 * x2 - .054233 * x2 + .55556);
+            } else if (minAgo <= dia) {
+                iobContrib = treatment.insulin * ( (dia-minAgo)*(dia-minAgo)/dia/(dia-tmax) );
                 //   activityContrib = sens * activityMultipler * treatment.insulin * (2 / dia / 60 - (minAgo - peak) * 2 / dia / 60 / (60 * dia - peak));
             }
 

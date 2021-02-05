@@ -701,6 +701,12 @@
                     android:key="xplus_insulin_dia"
                     android:summary=""
                     android:title="@string/insulin_duration_hours" />
+                <EditTextPreference
+                    android:defaultValue="60"
+                    android:inputType="numberDecimal"
+                    android:key="xplus_insulin_tmax"
+                    android:summary=""
+                    android:title="@string/insulin_tmax_mins" />
 
                 <EditTextPreference
                     android:defaultValue="2"

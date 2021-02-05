@@ -35,6 +35,7 @@ public class Profile {
     private static double stored_default_sensitivity = 54; // now defunct
     private static double stored_default_absorption_rate = 35;
     private static double stored_default_insulin_action_time = 3.0;
+    private static double stored_default_insulin_t_max = 60;
     private static double stored_default_carb_delay_minutes = 15;
     private static boolean preferences_loaded = false;
     private static List<ProfileItem> profileItemList;
@@ -58,6 +59,13 @@ public class Profile {
         stored_default_insulin_action_time = value;
     }
 
+    public static void setInsulinTmaxDefault(double value) {
+        // sanity check goes here
+        if (value < 5) return;
+        if (value > 24*60) return;
+        stored_default_insulin_t_max = value;
+    }
+
     static double getCarbAbsorptionRate(double when) {
         return stored_default_absorption_rate; // carbs per hour
     }
@@ -70,6 +78,10 @@ public class Profile {
 
     static double insulinActionTime(double when) {
         return stored_default_insulin_action_time;
+    }
+
+    static double insulinTmax(double when) {
+        return stored_default_insulin_t_max;
     }
 
     static double carbDelayMinutes(double when) {
@@ -230,6 +242,13 @@ public class Profile {
         } catch (Exception e) {
             if (JoH.ratelimit("invalid-insulin-profile", 60)) {
                 Home.toaststatic("Invalid insulin action time");
+            }
+        }
+        try {
+            Profile.setInsulinTmaxDefault(tolerantParseDouble(prefs.getString("xplus_insulin_tmax", "60")));
+        } catch (Exception e) {
+            if (JoH.ratelimit("invalid-insulin-profile", 60)) {
+                Home.toaststatic("Invalid insulin Tmax");
             }
         }
         profileItemList = null;
